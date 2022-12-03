@@ -11,7 +11,7 @@ var data =
     File.ReadAllLines(input);
 
 
-int ToPriority(char value) => value switch
+static int ToPriority(char value) => value switch
 {
     >= 'a' and <= 'z' => 1 + value - 'a',
     >= 'A' and <= 'Z' => 27 + value - 'A',
@@ -36,20 +36,15 @@ int ToPriority(char value) => value switch
 {
     static char GetGroupBadge(string[] group) => group[0].Intersect(group[1].Intersect(group[2])).Single();
 
-    var groups =
-        Enumerable.Range(0, data.Length / 3)
-            .Select(i => (start: i * 3, end: (i + 1) * 3))
-            .Select(range => data[range.start..range.end]);
-
     var part2 =
-        groups
+        data.Chunk(3)
             .Select(GetGroupBadge)
             .Select(ToPriority)
             .Sum();
     Console.WriteLine($"Part 2: {part2}");
 }
 
-void print(IEnumerable source, int indent = 0)
+static void print(IEnumerable source, int indent = 0)
 {
     var padding = new string(' ', indent);
     foreach (var item in source)
