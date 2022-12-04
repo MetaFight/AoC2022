@@ -8,16 +8,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="input-testing.txt" />
     <None Remove="input.txt" />
-    <None Remove="test-in.txt" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="input.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="test-in.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <Content Include="input-testing.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 

@@ -2,7 +2,7 @@
 
 var input =
     isInTestMode
-        ? "test-in.txt"
+        ? "input-testing.txt"
         : "input.txt";
 
 var data =
