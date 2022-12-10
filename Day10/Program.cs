@@ -10,11 +10,11 @@ var input =
 var data = File.ReadAllLines(input);
 
 var steps =
-    data.Select(item => item.Split())
+    data.Select(line => line.Split())
         .Select<string[], Action<CommLink>>(parts => parts switch
         {
-            ["noop"] => (CommLink x) => x.NoOp(),
-            ["addx", var arg] when int.TryParse(arg, out var intArg) => (CommLink x) => x.AddX(intArg),
+            ["noop"] => comms => comms.NoOp(),
+            ["addx", var arg] when int.TryParse(arg, out var intArg) => comms => comms.AddX(intArg),
             _ => throw new NotImplementedException()
         })
         .ToList();
