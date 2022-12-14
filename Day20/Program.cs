@@ -1,4 +1,4 @@
-﻿bool isInTestMode = false;
+﻿bool isInTestMode = true;
 
 var input =
     isInTestMode
