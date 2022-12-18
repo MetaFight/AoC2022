@@ -20,11 +20,15 @@ long part1;
     var minY = -0L;
     var map = new Map();
 
+    var debugOut = new List<string>();
+
     const long iterationCount = isInCompareMode ? debuggingIterationCount : 2022;
+    //const long iterationCount = 40;
     for (int rockCount = 0; rockCount < iterationCount; rockCount++)
     {
         var rock = Rock.GetNext(minY);
-        //DrawMap(map, rock);
+        //DrawMap(map, rock, rockCount + 1);
+        debugOut.Add(GetMapString(map, rock, rockCount + 1));
 
         bool descended;
         do
@@ -47,7 +51,7 @@ long part1;
 
         rock.AddSelfToMap(map, false, out var rockMinY, out _);
         minY = Math.Min(minY, rockMinY);
-        
+
         PrintFinalSteps(iterationCount, rockCount, rock);
     };
 
@@ -55,7 +59,58 @@ long part1;
     Console.WriteLine($"Part 1: {part1}");
     Console.WriteLine();
     Console.WriteLine();
+
+    debugOut.Add(GetMapString(map));
+    DumpDebugStuff(debugOut);
 }
+
+void DumpDebugStuff(List<string> debugOut)
+{
+    var asLines = debugOut.Select(text => text.Trim().Split("\r\n")).ToList();
+    asLines = asLines.Select(step => AbbreviateStep(step).ToArray()).ToList();
+    var height = asLines.Max(text => text.Length);
+
+    StringBuilder output = new StringBuilder();
+    const string filler = "         ";
+
+    for (int y = 0; y < height; y++)
+    {
+        var requiredLength = height - y;
+        var parts = asLines.Select(text => text.Length < requiredLength ? filler : text[text.Length - requiredLength]);
+        output.AppendLine(String.Join(" ", parts));
+    }
+
+    File.WriteAllText("debug.txt", output.ToString());
+
+    IEnumerable<string> AbbreviateStep(string[] lines)
+    {
+        var parts = lines.Reverse().Chunk(10).ToList();
+        var footer = parts.Take(1).SelectMany(i => i).Reverse().ToList();
+        var top = parts.Skip(1).TakeLast(4).SelectMany(i => i).Reverse().ToList();
+
+        var snipCount = lines.Length - (footer.Count + top.Count);
+
+        foreach (var line in top)
+        {
+            yield return line;
+        }
+
+        if (snipCount != 0)
+        {
+            yield return $"| - - - |";
+            yield return $"   skip  ";
+            yield return $"   {snipCount,4}  ";
+            yield return $"| - - - |";
+        }
+
+        foreach (var line in footer)
+        {
+            yield return line;
+        }
+    }
+}
+
+return;
 
 Rock.Reset();
 
@@ -130,7 +185,6 @@ Rock.Reset();
                     Console.WriteLine();
                     rockCount += rocksSkipped;
                     rockCount--;
-                    //rockCount -= 2;
                     continue;
                 }
             }
@@ -179,15 +233,16 @@ Rock.Reset();
     }
 }
 
-void DrawMap(HashSet<(int x, long y)> map, Rock? rock = null, long drawDepthLimit = 0L)
+void DrawMap(Map map, Rock? rock = null, int? rockNumber = null, long drawDepthLimit = 0L) => Console.WriteLine(GetMapString(map, rock, rockNumber, drawDepthLimit));
+
+static string GetMapString(Map map, Rock? rock = null, int? rockNumber = null, long drawDepthLimit = 0L)
 {
-    var mapMinY = map.Count > 0 ? map.Min(item => item.y) : 0;
+    var mapMinY = map.MinY;
     var rockMinY = rock?.MapMinY ?? 0;
 
     var minY = Math.Min(mapMinY, rockMinY);
 
     StringBuilder output = new StringBuilder();
-    output.AppendLine();
 
     for (long y = minY; y <= drawDepthLimit; y++)
     {
@@ -195,7 +250,7 @@ void DrawMap(HashSet<(int x, long y)> map, Rock? rock = null, long drawDepthLimi
         for (int x = 0; x < 7; x++)
         {
             output.Append(
-                map.Contains((x, y))
+                map.Contains(x, y)
                     ? "#"
                     : (rock?.GlobalPoints.Contains((x, y)) ?? false)
                         ? "@"
@@ -204,9 +259,17 @@ void DrawMap(HashSet<(int x, long y)> map, Rock? rock = null, long drawDepthLimi
         output.AppendLine("|");
     }
 
-    output.Append("+-------+");
-
-    Console.WriteLine(output.ToString());
+    output.AppendLine("+-------+");
+    if (rockNumber.HasValue)
+    {
+        output.AppendLine($"Rock {rockNumber,4}");
+    }
+    else
+    {
+        output.AppendLine($"         ");
+    }
+    output.AppendLine($"Hgt. {-mapMinY:0000}");
+    return output.ToString();
 }
 
 static void PrintFinalSteps(long iterationCount, long rockCount, Rock rock)
@@ -421,6 +484,8 @@ class Map
         this.columns[4].Count +
         this.columns[5].Count +
         this.columns[6].Count;
+
+    public long MinY => this.columns.Min(col => col.Count == 0 ? 0 : col.Min() - 1);
 }
 
 class Gas
